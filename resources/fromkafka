@@ -1,0 +1,8 @@
+sh
+export CLOUDKARAFKA_BROKERS='-- cloudkarafka brokers --';
+export CLOUDKARAFKA_USERNAME='-- cloudkarafka username --';
+export CLOUDKARAFKA_PASSWORD='-- cloudkarafka password --';
+export CLOUDKARAFKA_TOPIC_PREFIX='-- cloudkarafka username -- -';
+cd $HOME/java/kafka;
+java -cp ToKafka-1.0-SNAPSHOT-jar-with-dependencies.jar CobolToKafka.FromKafkaToPdf;
+

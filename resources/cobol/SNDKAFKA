@@ -1,0 +1,155 @@
+       cbl dll,thread,dbcs,pgmname(longmixed),list,map
+       Identification division.
+       Program-id. "SNDKAFKA" is recursive.
+       Environment division.
+       Configuration section.
+       Special-Names.
+            Decimal-Point is comma.
+       Repository.
+           Class ZUtil         is "com.ibm.jzos.ZUtil"
+           Class JavaException is "java.lang.Exception"
+           Class jdbb          is "java.nio.ByteBuffer"
+           Class ToKafka       is "CobolToKafka.ToKafka".
+
+       Input-output section.
+       File-control.
+           Select Indata assign to INDATA.
+       Data Division.
+       File section.
+       FD  Indata
+           Block contains 0 records
+           Record varying from 1 to 27990
+           Depending on w-record-length
+           Recording mode v.
+       COPY KAFKAREC.
+       Working-storage section.
+       01  ByteArray                        PIC x(27990).
+       01  Filler redefines ByteArray.
+           03  Filler                       PIC X.
+               88  Return-Nok Value X'FF'.
+           03  Filler                       Pic X(27989).
+       01  Jsonout                          Pic X(3100).
+       01  ex      object reference JavaException.
+       01  dbb     object reference jdbb.
+       01  RecordIn-pointer pointer.
+       01  w-ByteArray-length               PIC 9(18) comp value 27990.
+       01  w-record-length                  PIC 9(4) comp value 0.
+       01  w-json-length                    PIC 9(4) comp value 0.
+       01  w-json-length-r redefines w-json-length pic XX.
+       01  w-nbr-records                    PIC 9(9) comp value 0.
+       01  w-nbr-records-f                  PIC z(8)9.
+       01  w-eof-Indata                     pic x value "N".
+           88  eof-Indata Value "Y".
+       01  booleanResult                    Pic X.
+           88  boolean-true Value X'01' Through X'FF'.
+           88  boolean-false Value X'00'.
+
+       Linkage section.
+       COPY COPYJNI SUPPRESS.
+
+       Procedure division.
+      *----------------------------------------------------------------*
+      *                                                                *
+      *----------------------------------------------------------------*
+       0000-Main.
+           Display "COBOL program SNDKAFKA entered".
+      *
+           Perform 1000-Initialize.
+           If Return-Code = 0 then
+              Perform 2000-Process-Indata
+              Perform 3000-Cleanup
+           End-If.
+           display "Return-code: " RETURN-CODE.
+           Display "COBOL program SNDKAFKA left".
+           Goback.
+
+      *----------------------------------------------------------------*
+      *                                                                *
+      *----------------------------------------------------------------*
+        1000-Initialize.
+           Move 0 to Return-Code.
+           Set address of JNIEnv to JNIEnvPtr.
+           Set address of JNINativeInterface to JNIEnv.
+      *
+      * This static JZOS method will redirect Java stdout/stderr
+      * to DD:STDOUT and DD:STDERR, which may be spool files or data set
+      *
+      *     Invoke ZUtil "redirectStandardStreams".
+      *     Perform 9000-ErrorCheck.
+           Set RecordIn-pointer to Address Of ByteArray.
+           Call NewDirectByteBuffer Using by value
+                                              JNIEnvPtr
+                                              RecordIn-pointer
+                                              w-ByteArray-length
+                                     Returning dbb.
+           Perform 9100-ExceptionCheck.
+           Invoke ToKafka "toKafkaConnect".
+           Perform 9000-ErrorCheck.
+      *----------------------------------------------------------------*
+      *                                                                *
+      *----------------------------------------------------------------*
+        2000-Process-Indata.
+      *
+      * We open and read Indata file
+      *
+           Open Input Indata.
+           Read Indata at end move "Y" to w-eof-Indata.
+           Perform 4000-Process-Indata-Record
+             until (eof-Indata or Return-Code > 0).
+           Move w-nbr-records to w-nbr-records-f.
+           Display "Record nbr: " w-nbr-records-f.
+           Close Indata.
+      *----------------------------------------------------------------*
+      *                                                                *
+      *----------------------------------------------------------------*
+        3000-Cleanup.
+           Invoke ToKafka "toKafkaDisconnect".
+           Perform 9000-ErrorCheck.
+      *----------------------------------------------------------------*
+      *                                                                *
+      *----------------------------------------------------------------*
+        4000-Process-Indata-Record.
+           Add 1 to w-nbr-records.
+           IF RECTYPE = '4' THEN
+              Move INREC (1:1) To ByteArray (1:1)
+              JSON GENERATE Jsonout FROM INREC-F4
+                                   COUNT w-json-length
+              move w-json-length-r to ByteArray(2:2)
+              Move Jsonout (1:w-json-length)
+                To ByteArray (4:w-json-length)
+           ELSE
+              Move INREC (1:w-record-length)
+                To ByteArray (1:w-record-length)
+           END-IF.
+           Invoke ToKafka "toKafkaSend" Using By Value dbb.
+           Perform 9000-ErrorCheck.
+           If Return-Nok then
+             Display "Return from java not ok, RC = 16"
+             Move 16 to Return-Code
+           End-If.
+           Read Indata at end move "Y" to w-eof-Indata.
+      *----------------------------------------------------------------*
+      *                                                                *
+      *----------------------------------------------------------------*
+        9000-ErrorCheck.
+            Call ExceptionOccurred
+                using by value JNIEnvPtr
+                returning ex.
+            If ex not = null then
+                Invoke ex "printStackTrace"
+                Call ExceptionClear using by value JNIEnvPtr
+                Move 16 TO Return-Code
+            End-If.
+        9100-ExceptionCheck.
+            Call ExceptionCheck Using
+                                 By Value JNIEnvPtr
+                                Returning
+                                 booleanResult.
+            If boolean-true
+               Display "JNI Exception true"
+               Call ExceptionOccurred Using By Value JNIEnvPtr
+                                      Returning Ex
+               Call ExceptionDescribe Using By Value JNIEnvPtr
+               Call ExceptionClear Using By Value JNIEnvPtr
+               Move 16 To Return-Code
+            End-If.

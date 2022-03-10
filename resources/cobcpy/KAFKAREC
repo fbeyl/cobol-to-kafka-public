@@ -1,0 +1,22 @@
+      *
+      *
+      *
+       01  INREC.
+           03  RECTYPE                      PIC X.
+           03  FILLER                       PIC X(27989).
+       01  INREC-F1.
+           03  FILLER                       PIC X.
+           03  TYPE-1-FIELD-1               PIC S9(17) COMP-3.
+       01  INREC-F2.
+           03  FILLER                       PIC X.
+           03  TYPE-2-FIELD-1               PIC S99.
+       01  INREC-F3.
+           03  FILLER                       PIC X.
+           03  TYPE-3-FIELD-1               PIC X(15).
+       01  INREC-F4.
+           03  FILLER                       PIC X.
+           03  TYPE-4-FIELD-1               PIC X(15).
+           03  TYPE-4-FIELD-2               PIC S9(14)V99 COMP-3.
+           03  TYPE-4-FIELD-3               PIC S9(5)V99.
+       01  INREC-F9.
+           03  FILLER                       PIC X.

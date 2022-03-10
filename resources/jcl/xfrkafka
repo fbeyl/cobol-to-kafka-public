@@ -1,0 +1,11 @@
+//jobname  JOB FB3,
+//             &SYSUID,
+//             NOTIFY=&SYSUID,CLASS=A,
+//             MSGLEVEL=(1,1)
+// SET HOME='-- home --'
+//ST010    EXEC PGM=BPXBATCH,REGION=0M
+//STDOUT   DD SYSOUT=*
+//STDERR   DD SYSOUT=*
+//STDIN    DD *
+//STDPARM  DD PATH='&HOME./java/kafka/fromkafka',
+//            PATHOPTS=ORDONLY

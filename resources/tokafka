@@ -1,0 +1,8 @@
+PATH=bin:/usr/lpp/java/J8.0/bin
+LIBPATH=lib:/usr/lib:/usr/lpp/java/J8.0/bin:/usr/lpp/java/J8.0/lib/s390:/usr/lpp/java/J8.0/lib/s390/j9vm
+CLASSPATH=-- home --/java/kafka/ToKafka-1.0-SNAPSHOT-jar-with-dependencies.jar
+CLOUDKARAFKA_BROKERS=-- cloudkarafka brokers --
+CLOUDKARAFKA_USERNAME=-- cloudkarafka username --
+CLOUDKARAFKA_PASSWORD=-- cloudkarafka password --
+CLOUDKARAFKA_TOPIC_PREFIX=-- cloudkarafka username -- -
+COBJVMINITOPTIONS=-Xshareclasses:cacheDir=-- home --/java/kafka

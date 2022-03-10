@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive",
+		"cobol-lsp.cpy-manager.paths-local": [
+			"resources/cobcpy"
+		]
+	}
+}

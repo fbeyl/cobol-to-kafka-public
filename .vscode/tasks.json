@@ -1,0 +1,216 @@
+{
+	"version": "2.0.0",
+	"options": {
+		"env": {
+		  "ussfolder": "-- home --/java/kafka",
+		  "cobol": "-- uid --.KAFKA.COBOL",
+		  "jcl": "-- uid --.KAFKA.JCL",
+		  "copybook": "-- uid --.KAFKA.COBCPY",
+		  "CLOUDKARAFKA_BROKERS": "-- cloudkarafka brokers --",
+		  "CLOUDKARAFKA_USERNAME": "-- cloudkarafka username --",
+		  "CLOUDKARAFKA_PASSWORD": "-- cloudkarafka password --",
+		  "CLOUDKARAFKA_TOPIC_PREFIX": "-- cloudkarafka topic prefix (username) -- -"
+		},
+	},
+	"tasks": [
+		{
+			"label": "Deploy to z/OS",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"Upload to z/OS USS",
+				"Deploy to z/OS MVS"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload to z/OS MVS",
+			"group": "build",
+			"dependsOn": [
+				"Upload cobol sources to z/OS (mvs)",
+				"Upload cobol copybooks to z/OS (mvs)",
+				"Upload jcl files to z/OS (mvs)"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload to z/OS USS",
+			"group": "build",
+			"dependsOn": [
+				"Upload jar to z/OS (uss)",
+				"Upload tokafka to z/OS (uss)",
+				"Upload fromkafka to z/OS (uss)"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Deploy to z/OS MVS",
+			"group": "build",
+			"dependsOn": [
+				"Upload to z/OS MVS",
+				"Build on z/OS"
+			],
+			"dependsOrder": "sequence",
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload tokafka to z/OS (uss)",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-files upload file-to-uss resources/tokafka $ussfolder/tokafka",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload fromkafka to z/OS (uss)",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-files upload file-to-uss resources/fromkafka $ussfolder/fromkafka",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			}
+		},
+		{
+			"label": "Upload jar to z/OS (uss)",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-files upload file-to-uss \"target/ToKafka-1.0-SNAPSHOT-jar-with-dependencies.jar\" \"$ussfolder/ToKafka-1.0-SNAPSHOT-jar-with-dependencies.jar\" -b",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload cobol sources to z/OS (mvs)",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-files upload dir-to-pds resources/cobol $cobol",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload cobol copybooks to z/OS (mvs)",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-files upload dir-to-pds resources/cobcpy $copybook",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Upload jcl files to z/OS (mvs)",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-files upload dir-to-pds resources/jcl $jcl",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build on z/OS",
+			"type": "shell",
+			"group": "build",
+			"command": "zowe zos-jobs submit data-set \"$jcl(COMPLINK)\" --wfo",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run ToKafka on z/OS",
+			"type": "shell",
+			"group": "test",
+			"command": "zowe zos-jobs submit data-set \"$jcl(XTOKAFKA)\" --wfo",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run FromKafka on z/OS",
+			"type": "shell",
+			"group": "test",
+			"command": "zowe zos-jobs submit data-set \"$jcl(XFRKAFKA)\" --wfo",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run FromKafka local",
+			"type": "shell",
+			"group": "test",
+			"command": "java -cp target/ToKafka-1.0-SNAPSHOT-jar-with-dependencies.jar CobolToKafka.FromKafkaToPdf",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Download input ebcdic dataset",
+			"type": "shell",
+			"command": "zowe zos-files download data-set \"-- uid --.KAFKA.INPUT\" -b -f ${workspaceFolder}/kafka-input.ebcdic",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Edit input ebcdic dataset",
+			"type": "shell",
+			"command": "gnome-terminal -- /bin/sh -c 'hexeditor ${workspaceFolder}/kafka-input.ebcdic'",
+			"presentation": {
+				"reveal": "never"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Download z/OS output pdf file",
+			"type": "shell",
+			"command": "zowe zos-files download uss-file $ussfolder/kafka-output.pdf -b -f ${workspaceFolder}/kafka-output-zos.pdf",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Open z/OS output pdf file",
+			"type": "shell",
+			"command": "setsid xdg-open kafka-output-zos.pdf; exit",
+			"presentation": {
+				"reveal": "never"
+			},
+			"problemMatcher": []
+		},
+		{
+			"type": "java",
+			"targetPath": "${workspaceFolder}/${workspaceFolderBasename}.jar",
+			"elements": [
+				"${compileOutput}",
+				"${dependencies}"
+			],
+			"problemMatcher": [],
+			"label": "java: exportjar:cobol-to-kafka"
+		}
+	]
+}
