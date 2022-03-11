@@ -167,7 +167,7 @@
 		{
 			"label": "Download input ebcdic dataset",
 			"type": "shell",
-			"command": "zowe zos-files download data-set \"-- uid --.KAFKA.INPUT\" -b -f ${workspaceFolder}/kafka-input.ebcdic",
+			"command": "zowe zos-files download data-set \"-- uid --.KAFKA.INPUT2\" -b -f ${workspaceFolder}/kafka-input.ebcdic",
 			"presentation": {
 				"reveal": "always",
 				"panel": "new"
