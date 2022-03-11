@@ -1,17 +1,31 @@
-## Getting Started
+# Apache Kafka example howto integrate z/OS COBOL batch in hybrid application. z/OS COBOL module invokes java classes for sending messages to kafka topic residing in the cloud + receive topic messages using java class running on z/OS aswell as on Linux as on any java supporting platform.
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Example code to integrate z/OS COBOL batch job in hybrid setup.
+
+### Prerequisites
+
+To easily test this code you can create a free Apacha Kafka instance at https://www.cloudkarafka.com
+To easily perform actions with z/OS install zowe-cli from https://www.zowe.org, vscode + zowe explorer extension.
+
+### Configure
+
+All of the authentication settings for kafka instance can be found in the Details page for your CloudKarafka instance. Use them and z/OS USERID , /home folder to replace in jcl and uss fromkafka, tokafka files + tasks.json if needed.
+
+```
+export CLOUDKARAFKA_BROKERS=broker1:9094,broker2:9094,broker3:9094
+export CLOUDKARAFKA_USERNAME=<username>
+export CLOUDKARAFKA_PASSWORD=<password>
+export CLOUDKARAFKA_TOPIC_PREFIX=<topicprefix>
+```
 
 ## Folder Structure
 
-The workspace contains two folders by default, where:
+The workspace contains :
 
-- `src`: the folder to maintain sources
-- `resources`: the folder to maintain z/OS sources (cobol, copybook, jcl, uss settingsfiles, ...)
+- `src`: folder for java sources
+- `target`: folder contains classes + jar result of maven install
+- `resources`: folder for z/OS sources (cobol, copybook, jcl, uss settingsfiles, ...) that need to be uploaded + build on z/OS (task 'Deploy to z/OS)
 
-Meanwhile, the java class files will be generated in the `target` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
 
 ## Dependency Management
 
