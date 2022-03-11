@@ -1,6 +1,6 @@
-# Apache Kafka example howto integrate z/OS COBOL batch in hybrid application. z/OS COBOL module invokes java classes for sending messages to kafka topic residing in the cloud + receive topic messages using java class running on z/OS aswell as on Linux as on any java supporting platform.
+# z/OS COBOL batch in hybrid application using Apache Kafka.
 
-Example code to integrate z/OS COBOL batch job in hybrid setup.
+ Example code to integrate z/OS COBOL batch job in hybrid solution. z/OS COBOL module invokes java class for sending messages to kafka topic residing in the cloud + java class running in z/OS job aswell as in Linux terminal as on any java supporting platform to receive topic messages using.
 
 ### Prerequisites
 
